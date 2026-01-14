@@ -37,22 +37,22 @@ This project is automatically deployed using GitHub Actions. To host your own:
 ## 📝 Development Log (Devlog)
 
 ### v0.1 - The "Cozy" Foundation
-* Initial concept: A barista-themed typing trainer.
-* Basic logic: Input field matching against a static array of orders.
-* WPM and Accuracy formulas established.
+* Initial concept: Barista-themed typing trainer with basic input matching.
 
 ### v0.2 - The "Rush Hour" Update
-* Implemented **Motion Blur** transitions to simulate speed.
-* Added the **Heat Meter**: A survival mechanic where players lose if they type too slowly.
-* Added "Game Over" states for low accuracy.
+* Implemented **Motion Blur** transitions and the **Heat Meter** survival mechanic.
 
 ### v0.3 - The "Sensory" Update
-* Integrated **Web Audio API**: Real-time sound synthesis (clicks and dings) without needing external MP3 files.
-* Added a "Glassmorphism" UI skin for a professional modern look.
+* Integrated **Web Audio API** for real-time sound synthesis (clicks and dings).
+* Glassmorphism UI skin applied.
 
 ### v0.4 - The "Competitive" Update
-* Added **Local Leaderboards** using `localStorage`.
-* Implemented the **Ghost Challenge** system via URL parameters, allowing for indirect multiplayer competition.
+* Added **Local Leaderboards** and **Ghost Challenge** system via URL parameters.
+
+### v0.4.1 - The "Stability" Patch (Current)
+* **Bug Fix:** Resolved the "Infinity WPM" exploit where typing instantly caused massive speed scores.
+* **Logic Update:** WPM calculation now waits for a 2-second "warm-up" to ensure mathematical stability.
+* **UI Update:** Added version branding directly to the game screen.
 
 ---
 *Created by KnightGG.*
