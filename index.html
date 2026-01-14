@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatteTyper | v0.4 Stable</title>
+    <title>LatteTyper | v0.4.1 Stable</title>
     <style>
         :root {
             --espresso: #3d2622;
@@ -11,7 +11,6 @@
             --accent: #d4a373;
             --danger: #e63946;
             --success: #52b788;
-            --cream: #ffffff;
         }
 
         body, html {
@@ -25,8 +24,8 @@
 
         #game-screen {
             width: 90%; max-width: 700px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
             padding: 40px; border-radius: 20px;
             box-shadow: 20px 20px 0px var(--accent);
             position: relative;
@@ -75,17 +74,14 @@
             display: none; position: absolute; inset: 0;
             background: rgba(61, 38, 34, 0.98); border-radius: 20px;
             flex-direction: column; align-items: center; justify-content: center;
-            color: white; z-index: 10; text-align: center;
+            color: white; z-index: 10; text-align: center; white-space: pre-wrap;
         }
 
         button {
             background: var(--accent); color: white; border: none;
             padding: 12px 25px; border-radius: 5px; cursor: pointer;
-            font-family: inherit; font-weight: bold; margin: 5px;
-            transition: transform 0.1s;
+            font-family: inherit; font-weight: bold; margin: 10px 5px;
         }
-
-        button:active { transform: scale(0.95); }
 
         #leaderboard {
             margin-top: 20px; font-size: 12px; color: #8d7d70;
@@ -96,31 +92,31 @@
 <body>
 
     <div id="game-screen">
-        <div id="version-tag">VER_0.4_STABLE</div>
+        <div id="version-tag">VER_0.4.1_STABLE</div>
 
         <div id="game-over">
             <h1 id="over-title">SHIFT ENDED</h1>
             <p id="final-stats"></p>
             <div style="display:flex;">
                 <button onclick="location.reload()">New Shift</button>
-                <button id="share-btn" style="background: #6b4f3b;">Copy Challenge Link</button>
+                <button id="share-btn" style="background: #6b4f3b;">Copy Challenge</button>
             </div>
         </div>
 
         <div class="stats-bar">
             <span>WPM: <span id="wpm">0</span></span>
             <span>ACC: <span id="acc">100</span>%</span>
-            <span>HIGH: <span id="high-score">0</span></span>
+            <span>TOP: <span id="high-score">0</span></span>
         </div>
 
-        <div id="order-box">Press any key inside the box to start your shift...</div>
-        <input type="text" id="input-area" placeholder="Type the order exactly..." autocomplete="off">
+        <div id="order-box">Click box and type to start brewing...</div>
+        <input type="text" id="input-area" placeholder="Type order here..." autocomplete="off">
         
         <div id="heat-container"><div id="heat-fill"></div></div>
-        <div style="font-size: 10px; color: var(--espresso); opacity: 0.6;">COFFEE TEMPERATURE</div>
+        <div style="font-size: 10px; color: var(--espresso); opacity: 0.6; font-weight: bold;">COFFEE TEMP</div>
 
         <div id="leaderboard">
-            <strong>LOCAL TOP 5:</strong> <span id="score-list">No records yet</span>
+            <strong>LOCAL TOP 5:</strong> <span id="score-list">Empty</span>
         </div>
     </div>
 
@@ -153,17 +149,15 @@
         highDisplay.innerText = scores.length > 0 ? scores[0] : 0;
         if(scores.length > 0) scoreListDisplay.innerText = scores.join(' WPM, ') + ' WPM';
 
-        // Sound Engine
         function playKeySound() {
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(200 + Math.random() * 100, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(250 + Math.random() * 100, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.03);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.04);
         }
 
         function playDing() {
@@ -171,12 +165,11 @@
             const gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
         }
 
-        // Game Functions
         function startGame() {
             gameActive = true;
             startTime = new Date();
@@ -200,7 +193,7 @@
 
             const val = input.value;
             
-            // Accuracy Check
+            // Accuracy
             let mistakes = 0;
             for(let i=0; i<val.length; i++) {
                 if(val[i] !== currentOrder[i]) mistakes++;
@@ -208,57 +201,59 @@
             const accuracy = val.length > 0 ? Math.floor(100 - (mistakes / val.length * 100)) : 100;
             document.getElementById('acc').innerText = accuracy;
 
-            // Speed Check
-            const timeElapsed = (new Date() - startTime) / 60000;
-            const currentWpm = Math.round(((totalChars + val.length) / 5) / timeElapsed);
-            document.getElementById('wpm').innerText = currentWpm || 0;
+            // WPM Stability Fix (Must be active for > 2 seconds)
+            const timeElapsedSec = (new Date() - startTime) / 1000;
+            if (timeElapsedSec > 2) {
+                const currentWpm = Math.round(((totalChars + val.length) / 5) / (timeElapsedSec / 60));
+                document.getElementById('wpm').innerText = currentWpm;
+            } else {
+                document.getElementById('wpm').innerText = "--";
+            }
 
             if(val === currentOrder) {
                 playDing();
                 totalChars += currentOrder.length;
-                heat = Math.min(100, heat + 20);
+                heat = Math.min(100, heat + 22);
                 nextOrder();
             }
 
-            if(accuracy < 50 && val.length > 8) endGame("Accuracy too low! You're fired.");
+            if(accuracy < 40 && val.length > 10) endGame("Drink ruined! Accuracy dropped too low.");
         });
 
         function startHeatMeter() {
             const timer = setInterval(() => {
                 if(!gameActive) { clearInterval(timer); return; }
-                heat -= 0.35;
+                heat -= 0.4;
                 heatFill.style.width = heat + "%";
                 if(heat <= 0) endGame("The coffee went cold!");
-                if(heat < 30) heatFill.style.background = "var(--danger)";
-                else heatFill.style.background = "var(--success)";
+                heatFill.style.background = heat < 30 ? "var(--danger)" : "var(--success)";
             }, 100);
         }
 
         function endGame(reason) {
             gameActive = false;
-            const finalWpm = document.getElementById('wpm').innerText;
-            const finalAcc = document.getElementById('acc').innerText;
+            const finalWpm = document.getElementById('wpm').innerText === "--" ? 0 : document.getElementById('wpm').innerText;
             
-            // Save Score
+            // Update Leaderboard
             scores.push(parseInt(finalWpm));
             scores.sort((a,b) => b-a);
             scores = scores.slice(0, 5);
             localStorage.setItem('cafeScores', JSON.stringify(scores));
 
-            document.getElementById('final-stats').innerText = `${reason}\nSpeed: ${finalWpm} WPM | Accuracy: ${finalAcc}%`;
+            document.getElementById('final-stats').innerText = `${reason}\nFinal Speed: ${finalWpm} WPM`;
             document.getElementById('game-over').style.display = 'flex';
 
             document.getElementById('share-btn').onclick = () => {
-                const url = window.location.href.split('?')[0] + `?challenge=${finalWpm}`;
+                const url = window.location.origin + window.location.pathname + `?challenge=${finalWpm}`;
                 navigator.clipboard.writeText(url);
-                alert("Challenge link copied! Send it to a friend.");
+                alert("Challenge copied! Share your " + finalWpm + " WPM link.");
             };
         }
 
-        // Handle Challenge URL
         const params = new URLSearchParams(window.location.search);
         if(params.has('challenge')) {
-            orderBox.innerText = `CHALLENGE: Beat ${params.get('challenge')} WPM! Type to start.`;
+            const cVal = params.get('challenge');
+            orderBox.innerText = (cVal === "Infinity") ? "Hacker detected! ☕ Normal mode activated." : `CHALLENGE: Beat ${cVal} WPM!`;
         }
     </script>
 </body>
