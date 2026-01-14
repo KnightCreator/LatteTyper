@@ -2,178 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatteTyper | v0.6.5</title>
+    <title>LatteTyper | The Multiverse</title>
     <style>
         :root {
-            /* Classic Palette */
-            --bg: #fdf6f0;
-            --espresso: #3d2622;
-            --latte: #f5ebe0;
-            --accent: #d4a373;
-            --text: #3d2622;
-            --danger: #e63946;
-            --success: #52b788;
+            --bg: #fdf6f0; --espresso: #3d2622; --latte: #f5ebe0;
+            --accent: #d4a373; --text: #3d2622; --danger: #e63946;
         }
 
-        .palette-midnight {
-            --bg: #1a1a1a; --espresso: #000000; --latte: #2d2d2d; --accent: #7d5fff; --text: #eee;
-        }
-
-        .palette-matcha {
-            --bg: #f0f4ef; --espresso: #1e352f; --latte: #dbe5d1; --accent: #a3b18a; --text: #1e352f;
-        }
+        /* PALETTES (v0.6.5+) */
+        .palette-midnight { --bg: #1a1a1a; --espresso: #000; --accent: #7d5fff; --text: #eee; }
+        .palette-matcha { --bg: #f0f4ef; --espresso: #1e352f; --accent: #a3b18a; --text: #1e352f; }
 
         body {
-            margin: 0; padding: 0; background-color: var(--bg); color: var(--text);
-            font-family: 'Courier New', Courier, monospace; height: 100vh;
+            margin: 0; background: var(--bg); color: var(--text);
+            font-family: 'Courier New', monospace; height: 100vh;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
-            transition: background 0.5s ease;
         }
 
-        /* --- 45 DEGREE BG --- */
-        body::before {
-            content: ""; position: fixed; inset: 0;
-            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.03), rgba(0,0,0,0.03) 10px, transparent 10px, transparent 20px);
-            z-index: -1; animation: moveBg 10s linear infinite;
+        /* DYNAMIC BACKGROUND (v0.5+) */
+        #bg-layer {
+            position: fixed; inset: 0; z-index: -1; display: none;
+            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 10px, transparent 10px, transparent 20px);
+            animation: moveBg 20s linear infinite;
         }
         @keyframes moveBg { from { background-position: 0 0; } to { background-position: 100px 0; } }
 
-        /* --- LOADER / TRANSITION --- */
-        #loader {
-            position: fixed; inset: 0; background: var(--espresso);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 200; color: white;
-        }
-        .load-bar { width: 200px; height: 4px; background: #444; margin-top: 15px; }
+        /* SCREENS & UI */
+        .screen { display: none; width: 90%; max-width: 550px; text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 10px 10px 0 var(--accent); border: 2px solid var(--espresso); }
+        .active { display: block; }
+        
+        /* FEATURE VISIBILITY */
+        .v-hidden { display: none !important; }
+        .motion-blur { filter: blur(2px); transition: 0.2s; } /* v0.2 */
+
+        /* LOADER (v0.5+) */
+        #loader { position: fixed; inset: 0; background: var(--espresso); z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .load-bar { width: 200px; height: 4px; background: #333; margin-top: 10px; }
         #load-fill { width: 0%; height: 100%; background: var(--accent); }
 
-        /* --- SCREENS --- */
-        .screen { 
-            display: none; width: 90%; max-width: 500px; text-align: center;
-            background: white; padding: 40px; border-radius: 20px;
-            box-shadow: 15px 15px 0px var(--accent); border: 2px solid var(--espresso);
-        }
-        .active { display: block; }
-
-        /* --- UI ELEMENTS --- */
-        #input-area { width: 100%; border: none; border-bottom: 2px solid var(--espresso); font-size: 22px; padding: 10px 0; outline: none; background: transparent; color: var(--text); }
-        .stats { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; }
-        .progress-container { width: 100%; height: 15px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; width: 0%; transition: width 0.1s; }
-        
-        button { 
-            background: var(--espresso); color: white; border: none; padding: 12px 20px; 
-            margin: 8px; cursor: pointer; font-family: inherit; font-weight: bold; width: 80%;
-        }
-        button:hover { background: var(--accent); }
-
-        #game-over { position: absolute; inset: 0; background: var(--espresso); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; z-index: 100; }
+        button, select { background: var(--espresso); color: white; border: none; padding: 12px; margin: 5px; cursor: pointer; font-family: inherit; width: 80%; }
+        #input-area { width: 80%; font-size: 20px; padding: 10px; border: none; border-bottom: 2px solid var(--espresso); outline: none; background: transparent; }
     </style>
 </head>
 <body class="palette-classic">
 
+    <div id="bg-layer"></div>
+
     <div id="loader">
-        <h2 id="loader-text">BREWING...</h2>
+        <h2 id="load-msg">BREWING...</h2>
         <div class="load-bar"><div id="load-fill"></div></div>
     </div>
 
     <div id="screen-start" class="screen active">
         <h1>☕ LatteTyper</h1>
         <button onclick="nav('game')">START</button>
-        <button onclick="nav('difficulty')">CHANGE DIFFICULTY</button>
-        <button onclick="nav('customize')">CUSTOMIZE</button>
-    </div>
-
-    <div id="screen-difficulty" class="screen">
-        <h2>Select Mode</h2>
-        <button onclick="setDiff('cozy')">COZY (Choco Bar)</button>
-        <button onclick="setDiff('rush')">RUSH HOUR (Heat Meter)</button>
-        <button onclick="nav('start')">BACK</button>
+        <button onclick="nav('customize')">CUSTOMIZE & VERSIONS</button>
     </div>
 
     <div id="screen-customize" class="screen">
-        <h2>Palette</h2>
-        <button onclick="setPalette('classic')">CLASSIC ESPRESSO</button>
-        <button onclick="setPalette('midnight')">MIDNIGHT BREW</button>
-        <button onclick="setPalette('matcha')">FOREST MATCHA</button>
+        <h3>Version Select</h3>
+        <select id="ver-select" onchange="applyVersion(this.value)">
+            <option value="v0.6.5">v0.6.5 (State & Palette)</option>
+            <option value="v0.6">v0.6 (State Machine)</option>
+            <option value="v0.5">v0.5 (Engine Update)</option>
+            <option value="v0.4">v0.4 (Competitive)</option>
+            <option value="v0.1">v0.1 (Cozy Foundation)</option>
+        </select>
+        
+        <div id="palette-zone">
+            <h3>Palettes</h3>
+            <button onclick="setPalette('classic')">CLASSIC</button>
+            <button onclick="setPalette('midnight')">MIDNIGHT</button>
+            <button onclick="setPalette('matcha')">MATCHA</button>
+        </div>
         <button onclick="nav('start')">BACK</button>
     </div>
 
     <div id="screen-game" class="screen">
-        <div id="game-over">
-            <h1 id="over-title">SHIFT OVER</h1>
-            <p id="final-stats"></p>
-            <button onclick="nav('start')">MAIN MENU</button>
-        </div>
-        <div class="stats">
-            <span id="mode-tag">MODE: COZY</span>
-            <span>WPM: <span id="wpm-val">0</span></span>
-        </div>
-        <div id="order-box" style="padding: 15px; background: #f9f9f9; margin: 10px 0; border-left: 5px solid var(--accent);">Wait...</div>
-        <input type="text" id="input-area" placeholder="Type here..." autocomplete="off">
+        <div id="ver-branding" style="font-size: 10px; opacity: 0.5;"></div>
+        <div class="stats">WPM: <span id="wpm-val">0</span> | ACC: <span id="acc-val">100</span>%</div>
         
-        <p id="bar-label" style="font-size: 10px; text-align: left; margin-top: 15px;">PROGRESS</p>
-        <div class="progress-container"><div id="game-bar" class="progress-fill"></div></div>
+        <div id="order-box" style="margin: 20px 0; padding: 15px; background: #f9f9f9;">Wait...</div>
+        <input type="text" id="input-area" placeholder="Type order..." autocomplete="off">
         
-        <button id="cozy-return" style="display:none; margin-top: 20px; width: auto; font-size: 12px;" onclick="nav('start')">RETURN TO MENU</button>
+        <div id="bar-label" style="font-size: 10px; margin-top: 15px;">PROGRESS</div>
+        <div style="width: 100%; height: 10px; background: #eee; margin-top: 5px;">
+            <div id="game-bar" style="width: 0%; height: 100%; background: var(--accent);"></div>
+        </div>
+
+        <button id="btn-quit" onclick="nav('start')" style="margin-top: 20px; width: auto;">QUIT</button>
     </div>
 
     <script>
-        let mode = 'cozy', palette = 'classic', gameActive = false;
-        let currentOrder = "", totalChars = 0, startTime, heat = 100;
-        let orders = ["Oat milk latte.", "Double espresso.", "Iced mocha.", "Hot cocoa.", "Flat white."];
+        let curVer = "v0.6.5";
+        let gameActive = false, totalChars = 0, startTime, heat = 100;
+        let currentOrder = "Espresso with milk.";
+        const orders = ["Oat milk latte.", "Black coffee.", "Double espresso.", "Hot chocolate.", "Caramel macchiato."];
 
-        // --- NAVIGATION & TRANSITIONS ---
-        function nav(target) {
-            const loader = document.getElementById('loader');
-            const fill = document.getElementById('load-fill');
+        const verConfig = {
+            "v0.1": { menu: false, bg: false, choco: false, loader: false, sound: false, palette: false },
+            "v0.4": { menu: false, bg: false, choco: false, loader: false, sound: true, palette: false, leader: true },
+            "v0.5": { menu: false, bg: true, choco: false, loader: true, sound: true, palette: false },
+            "v0.6": { menu: true, bg: true, choco: true, loader: true, sound: true, palette: false },
+            "v0.6.5": { menu: true, bg: true, choco: true, loader: true, sound: true, palette: true }
+        };
+
+        function applyVersion(v) {
+            curVer = v;
+            const cfg = verConfig[v] || verConfig["v0.1"];
             
+            // Handle Loader transition
+            const loader = document.getElementById('loader');
             loader.style.display = 'flex';
-            fill.style.transition = 'width 1s linear';
-            fill.style.width = '100%';
-
+            document.getElementById('load-fill').style.width = '100%';
+            
             setTimeout(() => {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('screen-' + target).classList.add('active');
+                // Background
+                document.getElementById('bg-layer').style.display = cfg.bg ? 'block' : 'none';
+                // Palette Menu
+                document.getElementById('palette-zone').style.display = cfg.palette ? 'block' : 'none';
+                // Version branding
+                document.getElementById('ver-branding').innerText = v.toUpperCase();
                 
-                // Reset loader for next time
                 loader.style.display = 'none';
-                fill.style.transition = 'none';
-                fill.style.width = '0%';
-
-                if(target === 'game') startGame();
-                else stopGame();
+                document.getElementById('load-fill').style.width = '0%';
+                
+                if(!cfg.menu) {
+                    nav('game'); // Direct to game for old versions
+                } else {
+                    nav('start');
+                }
             }, 1000);
         }
 
-        function setDiff(d) { mode = d; nav('start'); }
-        function setPalette(p) { 
-            document.body.className = 'palette-' + p; 
-            nav('start'); 
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            if(id === 'game') startGame();
         }
 
-        // --- GAME LOGIC ---
-        function stopGame() { gameActive = false; }
-
         function startGame() {
-            gameActive = true;
-            totalChars = 0;
-            heat = 100;
-            startTime = new Date();
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('mode-tag').innerText = "MODE: " + mode.toUpperCase();
-            
-            if(mode === 'cozy') {
-                document.getElementById('bar-label').innerText = "CHOCOLATE PROGRESSION";
-                document.getElementById('game-bar').style.backgroundColor = "var(--espresso)";
-                document.getElementById('cozy-return').style.display = "inline-block";
-            } else {
-                document.getElementById('bar-label').innerText = "CUSTOMER WAITING TIME";
-                document.getElementById('game-bar').style.backgroundColor = "var(--danger)";
-                document.getElementById('cozy-return').style.display = "none";
-                startRushTimer();
-            }
+            gameActive = true; totalChars = 0; startTime = new Date();
             nextOrder();
         }
 
@@ -187,49 +156,31 @@
         document.getElementById('input-area').addEventListener('input', (e) => {
             if(!gameActive) return;
             const val = e.target.value;
+            const cfg = verConfig[curVer];
 
-            // Typo check for Rush Mode
-            if(mode === 'rush' && val.length > 0) {
-                if(val !== currentOrder.substring(0, val.length)) {
-                    endGame("TYPO! The customer left.");
-                    return;
-                }
-            }
+            // Motion Blur (v0.2)
+            if(curVer >= "v0.2") document.getElementById('order-box').classList.add('motion-blur');
 
-            // Progress Bar Logic
-            if(mode === 'cozy') {
+            // Progress Bar (v0.6+)
+            if(cfg.choco) {
                 const prog = (val.length / currentOrder.length) * 100;
                 document.getElementById('game-bar').style.width = prog + "%";
             }
 
             if(val === currentOrder) {
                 totalChars += currentOrder.length;
-                if(mode === 'rush') heat = Math.min(100, heat + 30); // Bonus time
+                document.getElementById('order-box').classList.remove('motion-blur');
                 nextOrder();
             }
 
-            // WPM Update
+            // WPM Math (Stable in v0.4.1+)
             const elapsed = (new Date() - startTime) / 60000;
-            if(elapsed > 0.01) {
+            if(elapsed > 0.03) {
                 document.getElementById('wpm-val').innerText = Math.round((totalChars / 5) / elapsed);
             }
         });
 
-        function startRushTimer() {
-            const t = setInterval(() => {
-                if(!gameActive || mode !== 'rush') { clearInterval(t); return; }
-                heat -= 0.5;
-                document.getElementById('game-bar').style.width = heat + "%";
-                if(heat <= 0) endGame("TIME'S UP!");
-            }, 100);
-        }
-
-        function endGame(msg) {
-            gameActive = false;
-            document.getElementById('over-title').innerText = msg;
-            document.getElementById('final-stats').innerText = "Speed: " + document.getElementById('wpm-val').innerText + " WPM";
-            document.getElementById('game-over').style.display = 'flex';
-        }
+        function setPalette(p) { document.body.className = 'palette-' + p; }
     </script>
 </body>
 </html>
