@@ -67,5 +67,14 @@ This project is automatically deployed using GitHub Actions. To host your own:
 * **Chocolate Progression:** Added a "Chocolate Bar" at the bottom that fills up as you type, representing your progress toward completing the order.
 * **Social Integration:** Restored the Local Leaderboard and Ghost Challenge systems.
 
+* ### v0.6.5 - The "State & Palette" Update
+* **UI State Machine:** Implemented a central "Start Screen" with navigation to Game, Difficulty, and Customization.
+* **Palette System:** Added a customization engine allowing players to swap between 'Classic Espresso', 'Midnight Brew', and 'Forest Matcha' themes.
+* **Mode Specialization:**
+    * **Cozy Mode:** Focuses on the "Chocolate Progression" bar with a "Return to Menu" safety button.
+    * **Rush Hour:** Re-implemented the "Heat Meter" (Customer Waiting Time) and added a looping order logic for endless play.
+* **Bug Fix:** Refined the "Hard Mode" typo detection logic to prevent false "Game Over" triggers.
+* **Transition System:** Re-purposed the loading screen as a "Travel transition" that plays whenever switching between the Menu and the Game.
+
 ---
 *Created by KnightGG.*
