@@ -54,5 +54,11 @@ This project is automatically deployed using GitHub Actions. To host your own:
 * **Logic Update:** WPM calculation now waits for a 2-second "warm-up" to ensure mathematical stability.
 * **UI Update:** Added version branding directly to the game screen.
 
+### v0.5 - The "Engine" Update (Current)
+* **Dynamic Environment:** Implemented an infinite scrolling background using CSS transforms.
+* **Speed Sync:** Connected the background animation speed to the WPM counter. As your typing intensity increases, the "city rush" speeds up.
+* **Boot Sequence:** Added a 5-second simulated loading screen with a "Pre-heating" progress bar to enhance the "game-y" atmosphere.
+* **UX Refinement:** Hidden the UI until the loading sequence is complete to ensure a smooth transition into gameplay.
+
 ---
 *Created by KnightGG.*
