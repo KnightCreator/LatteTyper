@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatteTyper | v0.4</title>
+    <title>LatteTyper | v0.4 Stable</title>
     <style>
         :root {
             --espresso: #3d2622;
@@ -11,6 +11,7 @@
             --accent: #d4a373;
             --danger: #e63946;
             --success: #52b788;
+            --cream: #ffffff;
         }
 
         body, html {
@@ -19,45 +20,77 @@
             font-family: 'Courier New', Courier, monospace;
             height: 100vh; display: flex;
             align-items: center; justify-content: center;
+            overflow: hidden;
         }
 
         #game-screen {
             width: 90%; max-width: 700px;
-            background: white; padding: 40px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 20px;
             box-shadow: 20px 20px 0px var(--accent);
             position: relative;
+            border: 1px solid rgba(255,255,255,0.5);
         }
 
-        /* Version Tag Style */
         #version-tag {
             position: absolute; bottom: 10px; right: 15px;
-            font-size: 10px; color: #bbb; letter-spacing: 1px;
+            font-size: 10px; color: #b0a496; letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .stats-bar {
+            display: flex; justify-content: space-between;
+            margin-bottom: 15px; font-weight: bold; color: var(--espresso);
         }
 
         #order-box {
             font-size: 20px; color: var(--espresso); margin-bottom: 20px;
-            min-height: 60px; padding: 20px; border-left: 5px solid var(--accent);
-            background: #faf9f6; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-height: 80px; padding: 20px; border-left: 5px solid var(--accent);
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            display: flex; align-items: center;
         }
+
+        .blur { filter: blur(8px); opacity: 0.3; transform: scale(0.98); }
 
         #input-area {
             width: 100%; border: none; border-bottom: 3px solid var(--espresso);
-            font-size: 24px; padding: 10px 0; outline: none; background: transparent;
+            font-size: 24px; padding: 10px 0; outline: none;
+            background: transparent; color: var(--espresso);
+            font-family: inherit;
         }
 
-        .stats-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+        #heat-container {
+            width: 100%; height: 10px; background: #e0d7cc;
+            margin: 25px 0 10px 0; border-radius: 5px; overflow: hidden;
+        }
+
+        #heat-fill {
+            width: 100%; height: 100%; background: var(--success);
+            transition: width 0.1s linear;
+        }
 
         #game-over {
             display: none; position: absolute; inset: 0;
             background: rgba(61, 38, 34, 0.98); border-radius: 20px;
-            flex-direction: column; align-items: center; justify-content: center; color: white;
-            z-index: 10; text-align: center;
+            flex-direction: column; align-items: center; justify-content: center;
+            color: white; z-index: 10; text-align: center;
         }
 
-        .blur { filter: blur(8px); opacity: 0.3; transform: translateY(-10px); }
+        button {
+            background: var(--accent); color: white; border: none;
+            padding: 12px 25px; border-radius: 5px; cursor: pointer;
+            font-family: inherit; font-weight: bold; margin: 5px;
+            transition: transform 0.1s;
+        }
 
-        /* Heat Bar Animation */
-        #heat-fill { height: 100%; width: 100%; background: var(--success); transition: width 0.1s linear; border-radius: 5px; }
+        button:active { transform: scale(0.95); }
+
+        #leaderboard {
+            margin-top: 20px; font-size: 12px; color: #8d7d70;
+            border-top: 1px dashed #d4a373; padding-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -66,27 +99,167 @@
         <div id="version-tag">VER_0.4_STABLE</div>
 
         <div id="game-over">
-            <h1>☕ SHIFT ENDED</h1>
+            <h1 id="over-title">SHIFT ENDED</h1>
             <p id="final-stats"></p>
-            <button onclick="location.reload()" style="cursor:pointer; padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 5px;">New Shift</button>
+            <div style="display:flex;">
+                <button onclick="location.reload()">New Shift</button>
+                <button id="share-btn" style="background: #6b4f3b;">Copy Challenge Link</button>
+            </div>
         </div>
 
         <div class="stats-bar">
             <span>WPM: <span id="wpm">0</span></span>
-            <span>TOP: <span id="high-score">0</span></span>
+            <span>ACC: <span id="acc">100</span>%</span>
+            <span>HIGH: <span id="high-score">0</span></span>
         </div>
 
-        <div id="order-box">Type below to start the coffee machine...</div>
-        <input type="text" id="input-area" placeholder="Start typing..." autocomplete="off">
+        <div id="order-box">Press any key inside the box to start your shift...</div>
+        <input type="text" id="input-area" placeholder="Type the order exactly..." autocomplete="off">
         
-        <div style="width: 100%; height: 8px; background: #eee; border-radius: 5px; margin: 20px 0;">
-            <div id="heat-fill"></div>
+        <div id="heat-container"><div id="heat-fill"></div></div>
+        <div style="font-size: 10px; color: var(--espresso); opacity: 0.6;">COFFEE TEMPERATURE</div>
+
+        <div id="leaderboard">
+            <strong>LOCAL TOP 5:</strong> <span id="score-list">No records yet</span>
         </div>
     </div>
 
     <script>
-        // ... (The JS logic from our previous conversation remains the same, 
-        // just ensure the version string in the HTML matches your devlog)
+        const orders = [
+            "Double-shot oat milk latte, extra hot, no foam.",
+            "Can I get a large Iced Americano with 2% milk?",
+            "Soy milk latte with two pumps of hazelnut syrup.",
+            "Flat white with a dash of cinnamon on top please.",
+            "One #MidnightBrew for @user_coffee with extra foam!",
+            "I'll take a hot chocolate at 180°C, lots of whip!",
+            "Medium roast black coffee. Keep it simple and hot."
+        ];
+
+        let currentOrder = "";
+        let gameActive = false;
+        let heat = 100;
+        let totalChars = 0;
+        let startTime;
+        let scores = JSON.parse(localStorage.getItem('cafeScores')) || [];
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const input = document.getElementById('input-area');
+        const orderBox = document.getElementById('order-box');
+        const heatFill = document.getElementById('heat-fill');
+        const scoreListDisplay = document.getElementById('score-list');
+        const highDisplay = document.getElementById('high-score');
+
+        // Init Leaderboard
+        highDisplay.innerText = scores.length > 0 ? scores[0] : 0;
+        if(scores.length > 0) scoreListDisplay.innerText = scores.join(' WPM, ') + ' WPM';
+
+        // Sound Engine
+        function playKeySound() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(200 + Math.random() * 100, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.03);
+        }
+
+        function playDing() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Game Functions
+        function startGame() {
+            gameActive = true;
+            startTime = new Date();
+            nextOrder();
+            startHeatMeter();
+        }
+
+        function nextOrder() {
+            orderBox.classList.add('blur');
+            setTimeout(() => {
+                currentOrder = orders[Math.floor(Math.random() * orders.length)];
+                orderBox.innerText = currentOrder;
+                orderBox.classList.remove('blur');
+                input.value = "";
+            }, 250);
+        }
+
+        input.addEventListener('input', (e) => {
+            if(!gameActive) startGame();
+            playKeySound();
+
+            const val = input.value;
+            
+            // Accuracy Check
+            let mistakes = 0;
+            for(let i=0; i<val.length; i++) {
+                if(val[i] !== currentOrder[i]) mistakes++;
+            }
+            const accuracy = val.length > 0 ? Math.floor(100 - (mistakes / val.length * 100)) : 100;
+            document.getElementById('acc').innerText = accuracy;
+
+            // Speed Check
+            const timeElapsed = (new Date() - startTime) / 60000;
+            const currentWpm = Math.round(((totalChars + val.length) / 5) / timeElapsed);
+            document.getElementById('wpm').innerText = currentWpm || 0;
+
+            if(val === currentOrder) {
+                playDing();
+                totalChars += currentOrder.length;
+                heat = Math.min(100, heat + 20);
+                nextOrder();
+            }
+
+            if(accuracy < 50 && val.length > 8) endGame("Accuracy too low! You're fired.");
+        });
+
+        function startHeatMeter() {
+            const timer = setInterval(() => {
+                if(!gameActive) { clearInterval(timer); return; }
+                heat -= 0.35;
+                heatFill.style.width = heat + "%";
+                if(heat <= 0) endGame("The coffee went cold!");
+                if(heat < 30) heatFill.style.background = "var(--danger)";
+                else heatFill.style.background = "var(--success)";
+            }, 100);
+        }
+
+        function endGame(reason) {
+            gameActive = false;
+            const finalWpm = document.getElementById('wpm').innerText;
+            const finalAcc = document.getElementById('acc').innerText;
+            
+            // Save Score
+            scores.push(parseInt(finalWpm));
+            scores.sort((a,b) => b-a);
+            scores = scores.slice(0, 5);
+            localStorage.setItem('cafeScores', JSON.stringify(scores));
+
+            document.getElementById('final-stats').innerText = `${reason}\nSpeed: ${finalWpm} WPM | Accuracy: ${finalAcc}%`;
+            document.getElementById('game-over').style.display = 'flex';
+
+            document.getElementById('share-btn').onclick = () => {
+                const url = window.location.href.split('?')[0] + `?challenge=${finalWpm}`;
+                navigator.clipboard.writeText(url);
+                alert("Challenge link copied! Send it to a friend.");
+            };
+        }
+
+        // Handle Challenge URL
+        const params = new URLSearchParams(window.location.search);
+        if(params.has('challenge')) {
+            orderBox.innerText = `CHALLENGE: Beat ${params.get('challenge')} WPM! Type to start.`;
+        }
     </script>
 </body>
 </html>
