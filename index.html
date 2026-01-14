@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatteTyper | v0.5 Engine</title>
+    <title>LatteTyper | v0.6</title>
     <style>
         :root {
             --espresso: #3d2622;
@@ -11,10 +11,10 @@
             --accent: #d4a373;
             --danger: #e63946;
             --success: #52b788;
-            --bg-speed: 60s;
+            --choco: #7b3f00;
         }
 
-        /* --- INFINITE BACKGROUND --- */
+        /* --- 45 DEGREE INFINITE BACKGROUND --- */
         body {
             margin: 0; padding: 0;
             background-color: var(--latte);
@@ -26,197 +26,177 @@
 
         body::before {
             content: "";
-            position: fixed; top: 0; left: 0;
-            width: 200%; height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/coffee-beans-with-glaze.png');
-            opacity: 0.15;
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(61, 38, 34, 0.05),
+                rgba(61, 38, 34, 0.05) 10px,
+                rgba(245, 235, 224, 0) 10px,
+                rgba(245, 235, 224, 0) 20px
+            );
             z-index: -1;
-            animation: scrollBg var(--bg-speed) linear infinite;
+            animation: moveBg 10s linear infinite;
         }
 
-        @keyframes scrollBg {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
+        @keyframes moveBg {
+            from { background-position: 0 0; }
+            to { background-position: 100px 0; }
         }
 
-        /* --- LOADING SCREEN --- */
+        /* --- LOADER --- */
         #loader {
             position: fixed; inset: 0; background: var(--espresso);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; color: white; transition: opacity 1s ease;
+            z-index: 100; color: white;
         }
 
-        .load-bar {
-            width: 250px; height: 4px; background: #555;
-            margin-top: 20px; border-radius: 2px; overflow: hidden;
-        }
+        .load-bar { width: 200px; height: 4px; background: #444; margin-top: 15px; border-radius: 2px; overflow: hidden; }
+        #load-fill { width: 0%; height: 100%; background: var(--accent); transition: width 5s linear; }
 
-        #load-fill {
-            width: 0%; height: 100%; background: var(--accent);
-            transition: width 5s linear;
+        /* --- MODE SELECTION --- */
+        #mode-menu {
+            display: none; text-align: center; background: white; 
+            padding: 40px; border-radius: 20px; box-shadow: 10px 10px 0px var(--espresso);
         }
 
         /* --- GAME UI --- */
         #game-screen {
-            display: none; width: 90%; max-width: 700px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(15px);
-            padding: 40px; border-radius: 25px;
-            box-shadow: 20px 20px 0px var(--accent);
+            display: none; width: 90%; max-width: 650px;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+            padding: 30px; border-radius: 20px; box-shadow: 15px 15px 0px var(--accent);
             position: relative;
         }
 
-        #version-tag { position: absolute; bottom: 10px; right: 15px; font-size: 10px; color: #b0a496; font-weight: bold; }
+        #order-box { font-size: 20px; padding: 20px; border-left: 5px solid var(--accent); background: #faf9f6; margin: 15px 0; }
+        #input-area { width: 100%; border: none; border-bottom: 2px solid var(--espresso); font-size: 22px; padding: 10px 0; outline: none; background: transparent; }
+        
+        /* --- CHOCOLATE PROGRESS BAR --- */
+        #choco-container { width: 100%; height: 20px; background: #eee; margin-top: 10px; border-radius: 4px; position: relative; overflow: hidden; }
+        #choco-fill { height: 100%; width: 0%; background: var(--choco); transition: width 0.2s; }
 
-        #order-box {
-            font-size: 20px; color: var(--espresso); margin-bottom: 20px;
-            min-height: 80px; padding: 20px; border-left: 5px solid var(--accent);
-            background: rgba(255, 255, 255, 0.5); transition: 0.3s;
-        }
+        .stats { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
+        #game-over { display: none; position: absolute; inset: 0; background: var(--espresso); color: white; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; z-index: 50; }
 
-        .blur { filter: blur(8px); opacity: 0.3; }
-
-        #input-area {
-            width: 100%; border: none; border-bottom: 3px solid var(--espresso);
-            font-size: 24px; padding: 10px 0; outline: none; background: transparent;
-        }
-
-        .stats { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; }
-
-        #heat-fill { height: 10px; background: var(--success); width: 100%; transition: 0.1s linear; border-radius: 5px; }
-
-        #game-over {
-            display: none; position: absolute; inset: 0;
-            background: rgba(61, 38, 34, 0.98); border-radius: 25px;
-            flex-direction: column; align-items: center; justify-content: center; color: white;
-            z-index: 10; text-align: center;
-        }
-
-        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        button { background: var(--espresso); color: white; border: none; padding: 12px 24px; cursor: pointer; border-radius: 4px; font-family: inherit; margin: 5px; }
+        button:hover { background: var(--accent); }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <h2 style="letter-spacing: 5px;">LATTETYPER</h2>
+        <h2>HEATING...</h2>
         <div class="load-bar"><div id="load-fill"></div></div>
-        <p id="load-text" style="font-size: 12px; margin-top: 10px;">Pre-heating espresso machine...</p>
+    </div>
+
+    <div id="mode-menu">
+        <h1 style="color: var(--espresso);">LatteTyper</h1>
+        <p>Select your shift difficulty:</p>
+        <button onclick="initGame('normal')">Cozy (Normal)</button>
+        <button onclick="initGame('hard')" style="background: var(--danger);">Rush Hour (Hard)</button>
     </div>
 
     <div id="game-screen">
-        <div id="version-tag">VER_0.5_STABLE</div>
         <div id="game-over">
-            <h1>☕ SHIFT ENDED</h1>
+            <h1>☕ RESULTS</h1>
             <p id="final-stats"></p>
-            <button onclick="location.reload()">Restart</button>
+            <div>
+                <button onclick="location.reload()">Menu</button>
+                <button id="share-btn">Share Challenge</button>
+            </div>
         </div>
 
         <div class="stats">
-            <span>WPM: <span id="wpm">0</span></span>
-            <span>HEAT: <span id="heat-val">100</span>%</span>
+            <span>WPM: <span id="wpm-val">0</span></span>
+            <span>TOP: <span id="top-val">0</span></span>
         </div>
 
-        <div id="order-box">Press any key to start your shift...</div>
+        <div id="order-box">Wait for order...</div>
         <input type="text" id="input-area" placeholder="Type here..." autocomplete="off">
         
-        <div style="width: 100%; background: #eee; border-radius: 5px; margin-top: 20px;">
-            <div id="heat-fill"></div>
-        </div>
+        <p style="font-size: 10px; margin-top: 20px; font-weight: bold;">ORDER PROGRESSION (CHOCOLATE BAR)</p>
+        <div id="choco-container"><div id="choco-fill"></div></div>
     </div>
 
     <script>
-        // --- LOADING SEQUENCE ---
+        let currentOrder = "", gameActive = false, totalChars = 0, startTime, mode = 'normal';
+        let scores = JSON.parse(localStorage.getItem('cafeScores')) || [];
+
+        // --- ONE-TIME LOADING LOGIC ---
         window.onload = () => {
-            const fill = document.getElementById('load-fill');
-            fill.style.width = "100%";
-            setTimeout(() => {
-                document.getElementById('loader').style.opacity = "0";
+            if (sessionStorage.getItem('hasLoaded')) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('mode-menu').style.display = 'block';
+            } else {
+                document.getElementById('load-fill').style.width = '100%';
                 setTimeout(() => {
-                    document.getElementById('loader').style.display = "none";
-                    document.getElementById('game-screen').style.display = "block";
-                }, 1000);
-            }, 5000);
+                    sessionStorage.setItem('hasLoaded', 'true');
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('mode-menu').style.display = 'block';
+                    }, 500);
+                }, 5000);
+            }
+            document.getElementById('top-val').innerText = scores.length > 0 ? scores[0] : 0;
         };
 
-        const orders = [
-            "Triple-shot espresso, no sugar, extra foam.",
-            "I'll have a tall oat milk latte with two pumps of vanilla.",
-            "Can I get a large Iced Americano with 2% milk?",
-            "Soy milk latte with two pumps of hazelnut syrup.",
-            "Flat white with a dash of cinnamon on top please.",
-            "The #DailySpecial with @extra_shots pronto!"
-        ];
-
-        let currentOrder = "", gameActive = false, heat = 100, totalChars = 0, startTime;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playSound(freq, duration) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function startGame() {
-            gameActive = true;
-            startTime = new Date();
+        function initGame(m) {
+            mode = m;
+            document.getElementById('mode-menu').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('input-area').focus();
             nextOrder();
-            startHeatMeter();
         }
 
         function nextOrder() {
-            const box = document.getElementById('order-box');
-            box.classList.add('blur');
-            setTimeout(() => {
-                currentOrder = orders[Math.floor(Math.random() * orders.length)];
-                box.innerText = currentOrder;
-                box.classList.remove('blur');
-                document.getElementById('input-area').value = "";
-            }, 250);
+            const list = ["Hot latte, no sugar.", "Iced Americano.", "Espresso shot.", "Oat milk flat white.", "Caramel Macchiato."];
+            currentOrder = list[Math.floor(Math.random() * list.length)];
+            document.getElementById('order-box').innerText = currentOrder;
+            document.getElementById('input-area').value = "";
+            document.getElementById('choco-fill').style.width = "0%";
+            if(!gameActive) { gameActive = true; startTime = new Date(); }
         }
 
         document.getElementById('input-area').addEventListener('input', (e) => {
-            if(!gameActive) startGame();
-            playSound(200 + Math.random() * 100, 0.05);
-
             const val = e.target.value;
-            const timeElapsedMin = (new Date() - startTime) / 60000;
             
-            if (timeElapsedMin > 0.03) {
-                const wpm = Math.round(((totalChars + val.length) / 5) / timeElapsedMin);
-                document.getElementById('wpm').innerText = wpm;
-                
-                // SPEED SYNC: Background moves faster as WPM increases
-                const newSpeed = Math.max(5, 60 - (wpm / 2));
-                document.body.style.setProperty('--bg-speed', `${newSpeed}s`);
+            // Progress Logic (Chocolate Bar)
+            const progress = (val.length / currentOrder.length) * 100;
+            document.getElementById('choco-fill').style.width = Math.min(progress, 100) + "%";
+
+            // Live WPM
+            const timeElapsed = (new Date() - startTime) / 60000;
+            if (timeElapsed > 0.01) {
+                const wpm = Math.round(((totalChars + val.length) / 5) / timeElapsed);
+                document.getElementById('wpm-val').innerText = wpm;
             }
 
-            if(val === currentOrder) {
-                playSound(880, 0.3);
+            if (val === currentOrder) {
                 totalChars += currentOrder.length;
-                heat = Math.min(100, heat + 20);
                 nextOrder();
+            }
+
+            // Hard Mode Penalty: Too many mistakes = instant lose
+            if(mode === 'hard' && val.length > 0 && val[val.length-1] !== currentOrder[val.length-1]) {
+                endGame("TYPO DETECTED!");
             }
         });
 
-        function startHeatMeter() {
-            setInterval(() => {
-                if(!gameActive) return;
-                heat -= 0.4;
-                document.getElementById('heat-fill').style.width = heat + "%";
-                document.getElementById('heat-val').innerText = Math.floor(heat);
-                if(heat <= 0) endGame();
-            }, 100);
-        }
-
-        function endGame() {
+        function endGame(reason) {
             gameActive = false;
-            document.getElementById('final-stats').innerText = `Speed: ${document.getElementById('wpm').innerText} WPM`;
+            const finalWpm = document.getElementById('wpm-val').innerText;
+            scores.push(parseInt(finalWpm));
+            scores.sort((a,b) => b-a);
+            localStorage.setItem('cafeScores', JSON.stringify(scores.slice(0, 5)));
+            
+            document.getElementById('final-stats').innerText = `${reason}\nScore: ${finalWpm} WPM`;
             document.getElementById('game-over').style.display = 'flex';
+
+            document.getElementById('share-btn').onclick = () => {
+                const url = window.location.origin + window.location.pathname + `?challenge=${finalWpm}`;
+                navigator.clipboard.writeText(url);
+                alert("Challenge copied!");
+            };
         }
     </script>
 </body>
