@@ -60,5 +60,12 @@ This project is automatically deployed using GitHub Actions. To host your own:
 * **Boot Sequence:** Added a 5-second simulated loading screen with a "Pre-heating" progress bar to enhance the "game-y" atmosphere.
 * **UX Refinement:** Hidden the UI until the loading sequence is complete to ensure a smooth transition into gameplay.
 
+* ### v0.6 - The "State Machine" Update
+* **Mode Selection:** Added a pre-game menu to choose between 'Cozy' (Normal) and 'Rush Hour' (Hard).
+* **Smart Loading:** Refactored the loading screen to use `sessionStorage`, so it only plays once per visit.
+* **Vector Background:** Implemented a lightweight CSS-pattern background (45-degree stripes) with infinite rightward scrolling.
+* **Chocolate Progression:** Added a "Chocolate Bar" at the bottom that fills up as you type, representing your progress toward completing the order.
+* **Social Integration:** Restored the Local Leaderboard and Ghost Challenge systems.
+
 ---
 *Created by KnightGG.*
