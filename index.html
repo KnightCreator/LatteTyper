@@ -3,200 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatteTyper | v0.6</title>
+    <title>LatteTyper | v0.6.5</title>
     <style>
         :root {
+            /* Classic Palette */
+            --bg: #fdf6f0;
             --espresso: #3d2622;
             --latte: #f5ebe0;
             --accent: #d4a373;
+            --text: #3d2622;
             --danger: #e63946;
             --success: #52b788;
-            --choco: #7b3f00;
         }
 
-        /* --- 45 DEGREE INFINITE BACKGROUND --- */
+        .palette-midnight {
+            --bg: #1a1a1a; --espresso: #000000; --latte: #2d2d2d; --accent: #7d5fff; --text: #eee;
+        }
+
+        .palette-matcha {
+            --bg: #f0f4ef; --espresso: #1e352f; --latte: #dbe5d1; --accent: #a3b18a; --text: #1e352f;
+        }
+
         body {
-            margin: 0; padding: 0;
-            background-color: var(--latte);
-            font-family: 'Courier New', Courier, monospace;
-            height: 100vh; display: flex;
-            align-items: center; justify-content: center;
-            overflow: hidden;
+            margin: 0; padding: 0; background-color: var(--bg); color: var(--text);
+            font-family: 'Courier New', Courier, monospace; height: 100vh;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            transition: background 0.5s ease;
         }
 
+        /* --- 45 DEGREE BG --- */
         body::before {
-            content: "";
-            position: fixed; inset: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(61, 38, 34, 0.05),
-                rgba(61, 38, 34, 0.05) 10px,
-                rgba(245, 235, 224, 0) 10px,
-                rgba(245, 235, 224, 0) 20px
-            );
-            z-index: -1;
-            animation: moveBg 10s linear infinite;
+            content: ""; position: fixed; inset: 0;
+            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.03), rgba(0,0,0,0.03) 10px, transparent 10px, transparent 20px);
+            z-index: -1; animation: moveBg 10s linear infinite;
         }
+        @keyframes moveBg { from { background-position: 0 0; } to { background-position: 100px 0; } }
 
-        @keyframes moveBg {
-            from { background-position: 0 0; }
-            to { background-position: 100px 0; }
-        }
-
-        /* --- LOADER --- */
+        /* --- LOADER / TRANSITION --- */
         #loader {
             position: fixed; inset: 0; background: var(--espresso);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; color: white;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 200; color: white;
         }
+        .load-bar { width: 200px; height: 4px; background: #444; margin-top: 15px; }
+        #load-fill { width: 0%; height: 100%; background: var(--accent); }
 
-        .load-bar { width: 200px; height: 4px; background: #444; margin-top: 15px; border-radius: 2px; overflow: hidden; }
-        #load-fill { width: 0%; height: 100%; background: var(--accent); transition: width 5s linear; }
-
-        /* --- MODE SELECTION --- */
-        #mode-menu {
-            display: none; text-align: center; background: white; 
-            padding: 40px; border-radius: 20px; box-shadow: 10px 10px 0px var(--espresso);
+        /* --- SCREENS --- */
+        .screen { 
+            display: none; width: 90%; max-width: 500px; text-align: center;
+            background: white; padding: 40px; border-radius: 20px;
+            box-shadow: 15px 15px 0px var(--accent); border: 2px solid var(--espresso);
         }
+        .active { display: block; }
 
-        /* --- GAME UI --- */
-        #game-screen {
-            display: none; width: 90%; max-width: 650px;
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
-            padding: 30px; border-radius: 20px; box-shadow: 15px 15px 0px var(--accent);
-            position: relative;
-        }
-
-        #order-box { font-size: 20px; padding: 20px; border-left: 5px solid var(--accent); background: #faf9f6; margin: 15px 0; }
-        #input-area { width: 100%; border: none; border-bottom: 2px solid var(--espresso); font-size: 22px; padding: 10px 0; outline: none; background: transparent; }
+        /* --- UI ELEMENTS --- */
+        #input-area { width: 100%; border: none; border-bottom: 2px solid var(--espresso); font-size: 22px; padding: 10px 0; outline: none; background: transparent; color: var(--text); }
+        .stats { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; }
+        .progress-container { width: 100%; height: 15px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; width: 0%; transition: width 0.1s; }
         
-        /* --- CHOCOLATE PROGRESS BAR --- */
-        #choco-container { width: 100%; height: 20px; background: #eee; margin-top: 10px; border-radius: 4px; position: relative; overflow: hidden; }
-        #choco-fill { height: 100%; width: 0%; background: var(--choco); transition: width 0.2s; }
-
-        .stats { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        #game-over { display: none; position: absolute; inset: 0; background: var(--espresso); color: white; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; z-index: 50; }
-
-        button { background: var(--espresso); color: white; border: none; padding: 12px 24px; cursor: pointer; border-radius: 4px; font-family: inherit; margin: 5px; }
+        button { 
+            background: var(--espresso); color: white; border: none; padding: 12px 20px; 
+            margin: 8px; cursor: pointer; font-family: inherit; font-weight: bold; width: 80%;
+        }
         button:hover { background: var(--accent); }
+
+        #game-over { position: absolute; inset: 0; background: var(--espresso); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; z-index: 100; }
     </style>
 </head>
-<body>
+<body class="palette-classic">
 
     <div id="loader">
-        <h2>HEATING...</h2>
+        <h2 id="loader-text">BREWING...</h2>
         <div class="load-bar"><div id="load-fill"></div></div>
     </div>
 
-    <div id="mode-menu">
-        <h1 style="color: var(--espresso);">LatteTyper</h1>
-        <p>Select your shift difficulty:</p>
-        <button onclick="initGame('normal')">Cozy (Normal)</button>
-        <button onclick="initGame('hard')" style="background: var(--danger);">Rush Hour (Hard)</button>
+    <div id="screen-start" class="screen active">
+        <h1>☕ LatteTyper</h1>
+        <button onclick="nav('game')">START</button>
+        <button onclick="nav('difficulty')">CHANGE DIFFICULTY</button>
+        <button onclick="nav('customize')">CUSTOMIZE</button>
     </div>
 
-    <div id="game-screen">
+    <div id="screen-difficulty" class="screen">
+        <h2>Select Mode</h2>
+        <button onclick="setDiff('cozy')">COZY (Choco Bar)</button>
+        <button onclick="setDiff('rush')">RUSH HOUR (Heat Meter)</button>
+        <button onclick="nav('start')">BACK</button>
+    </div>
+
+    <div id="screen-customize" class="screen">
+        <h2>Palette</h2>
+        <button onclick="setPalette('classic')">CLASSIC ESPRESSO</button>
+        <button onclick="setPalette('midnight')">MIDNIGHT BREW</button>
+        <button onclick="setPalette('matcha')">FOREST MATCHA</button>
+        <button onclick="nav('start')">BACK</button>
+    </div>
+
+    <div id="screen-game" class="screen">
         <div id="game-over">
-            <h1>☕ RESULTS</h1>
+            <h1 id="over-title">SHIFT OVER</h1>
             <p id="final-stats"></p>
-            <div>
-                <button onclick="location.reload()">Menu</button>
-                <button id="share-btn">Share Challenge</button>
-            </div>
+            <button onclick="nav('start')">MAIN MENU</button>
         </div>
-
         <div class="stats">
+            <span id="mode-tag">MODE: COZY</span>
             <span>WPM: <span id="wpm-val">0</span></span>
-            <span>TOP: <span id="top-val">0</span></span>
         </div>
-
-        <div id="order-box">Wait for order...</div>
+        <div id="order-box" style="padding: 15px; background: #f9f9f9; margin: 10px 0; border-left: 5px solid var(--accent);">Wait...</div>
         <input type="text" id="input-area" placeholder="Type here..." autocomplete="off">
         
-        <p style="font-size: 10px; margin-top: 20px; font-weight: bold;">ORDER PROGRESSION (CHOCOLATE BAR)</p>
-        <div id="choco-container"><div id="choco-fill"></div></div>
+        <p id="bar-label" style="font-size: 10px; text-align: left; margin-top: 15px;">PROGRESS</p>
+        <div class="progress-container"><div id="game-bar" class="progress-fill"></div></div>
+        
+        <button id="cozy-return" style="display:none; margin-top: 20px; width: auto; font-size: 12px;" onclick="nav('start')">RETURN TO MENU</button>
     </div>
 
     <script>
-        let currentOrder = "", gameActive = false, totalChars = 0, startTime, mode = 'normal';
-        let scores = JSON.parse(localStorage.getItem('cafeScores')) || [];
+        let mode = 'cozy', palette = 'classic', gameActive = false;
+        let currentOrder = "", totalChars = 0, startTime, heat = 100;
+        let orders = ["Oat milk latte.", "Double espresso.", "Iced mocha.", "Hot cocoa.", "Flat white."];
 
-        // --- ONE-TIME LOADING LOGIC ---
-        window.onload = () => {
-            if (sessionStorage.getItem('hasLoaded')) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('mode-menu').style.display = 'block';
+        // --- NAVIGATION & TRANSITIONS ---
+        function nav(target) {
+            const loader = document.getElementById('loader');
+            const fill = document.getElementById('load-fill');
+            
+            loader.style.display = 'flex';
+            fill.style.transition = 'width 1s linear';
+            fill.style.width = '100%';
+
+            setTimeout(() => {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-' + target).classList.add('active');
+                
+                // Reset loader for next time
+                loader.style.display = 'none';
+                fill.style.transition = 'none';
+                fill.style.width = '0%';
+
+                if(target === 'game') startGame();
+                else stopGame();
+            }, 1000);
+        }
+
+        function setDiff(d) { mode = d; nav('start'); }
+        function setPalette(p) { 
+            document.body.className = 'palette-' + p; 
+            nav('start'); 
+        }
+
+        // --- GAME LOGIC ---
+        function stopGame() { gameActive = false; }
+
+        function startGame() {
+            gameActive = true;
+            totalChars = 0;
+            heat = 100;
+            startTime = new Date();
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('mode-tag').innerText = "MODE: " + mode.toUpperCase();
+            
+            if(mode === 'cozy') {
+                document.getElementById('bar-label').innerText = "CHOCOLATE PROGRESSION";
+                document.getElementById('game-bar').style.backgroundColor = "var(--espresso)";
+                document.getElementById('cozy-return').style.display = "inline-block";
             } else {
-                document.getElementById('load-fill').style.width = '100%';
-                setTimeout(() => {
-                    sessionStorage.setItem('hasLoaded', 'true');
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('loader').style.display = 'none';
-                        document.getElementById('mode-menu').style.display = 'block';
-                    }, 500);
-                }, 5000);
+                document.getElementById('bar-label').innerText = "CUSTOMER WAITING TIME";
+                document.getElementById('game-bar').style.backgroundColor = "var(--danger)";
+                document.getElementById('cozy-return').style.display = "none";
+                startRushTimer();
             }
-            document.getElementById('top-val').innerText = scores.length > 0 ? scores[0] : 0;
-        };
-
-        function initGame(m) {
-            mode = m;
-            document.getElementById('mode-menu').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('input-area').focus();
             nextOrder();
         }
 
         function nextOrder() {
-            const list = ["Hot latte, no sugar.", "Iced Americano.", "Espresso shot.", "Oat milk flat white.", "Caramel Macchiato."];
-            currentOrder = list[Math.floor(Math.random() * list.length)];
+            currentOrder = orders[Math.floor(Math.random() * orders.length)];
             document.getElementById('order-box').innerText = currentOrder;
             document.getElementById('input-area').value = "";
-            document.getElementById('choco-fill').style.width = "0%";
-            if(!gameActive) { gameActive = true; startTime = new Date(); }
+            document.getElementById('input-area').focus();
         }
 
         document.getElementById('input-area').addEventListener('input', (e) => {
+            if(!gameActive) return;
             const val = e.target.value;
-            
-            // Progress Logic (Chocolate Bar)
-            const progress = (val.length / currentOrder.length) * 100;
-            document.getElementById('choco-fill').style.width = Math.min(progress, 100) + "%";
 
-            // Live WPM
-            const timeElapsed = (new Date() - startTime) / 60000;
-            if (timeElapsed > 0.01) {
-                const wpm = Math.round(((totalChars + val.length) / 5) / timeElapsed);
-                document.getElementById('wpm-val').innerText = wpm;
+            // Typo check for Rush Mode
+            if(mode === 'rush' && val.length > 0) {
+                if(val !== currentOrder.substring(0, val.length)) {
+                    endGame("TYPO! The customer left.");
+                    return;
+                }
             }
 
-            if (val === currentOrder) {
+            // Progress Bar Logic
+            if(mode === 'cozy') {
+                const prog = (val.length / currentOrder.length) * 100;
+                document.getElementById('game-bar').style.width = prog + "%";
+            }
+
+            if(val === currentOrder) {
                 totalChars += currentOrder.length;
+                if(mode === 'rush') heat = Math.min(100, heat + 30); // Bonus time
                 nextOrder();
             }
 
-            // Hard Mode Penalty: Too many mistakes = instant lose
-            if(mode === 'hard' && val.length > 0 && val[val.length-1] !== currentOrder[val.length-1]) {
-                endGame("TYPO DETECTED!");
+            // WPM Update
+            const elapsed = (new Date() - startTime) / 60000;
+            if(elapsed > 0.01) {
+                document.getElementById('wpm-val').innerText = Math.round((totalChars / 5) / elapsed);
             }
         });
 
-        function endGame(reason) {
-            gameActive = false;
-            const finalWpm = document.getElementById('wpm-val').innerText;
-            scores.push(parseInt(finalWpm));
-            scores.sort((a,b) => b-a);
-            localStorage.setItem('cafeScores', JSON.stringify(scores.slice(0, 5)));
-            
-            document.getElementById('final-stats').innerText = `${reason}\nScore: ${finalWpm} WPM`;
-            document.getElementById('game-over').style.display = 'flex';
+        function startRushTimer() {
+            const t = setInterval(() => {
+                if(!gameActive || mode !== 'rush') { clearInterval(t); return; }
+                heat -= 0.5;
+                document.getElementById('game-bar').style.width = heat + "%";
+                if(heat <= 0) endGame("TIME'S UP!");
+            }, 100);
+        }
 
-            document.getElementById('share-btn').onclick = () => {
-                const url = window.location.origin + window.location.pathname + `?challenge=${finalWpm}`;
-                navigator.clipboard.writeText(url);
-                alert("Challenge copied!");
-            };
+        function endGame(msg) {
+            gameActive = false;
+            document.getElementById('over-title').innerText = msg;
+            document.getElementById('final-stats').innerText = "Speed: " + document.getElementById('wpm-val').innerText + " WPM";
+            document.getElementById('game-over').style.display = 'flex';
         }
     </script>
 </body>
