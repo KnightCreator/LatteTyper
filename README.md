@@ -75,10 +75,23 @@ This project is automatically deployed using GitHub Actions. To host your own:
     * **Rush Hour:** Re-implemented the "Heat Meter" (Customer Waiting Time) and added a looping order logic for endless play.
 * **Bug Fix:** Refined the "Hard Mode" typo detection logic to prevent false "Game Over" triggers.
 * **Transition System:** Re-purposed the loading screen as a "Travel transition" that plays whenever switching between the Menu and the Game.
-* 
+  
 ### v0.6.7 - The "Grand Architecture" Update
 * **State Machine:** Full menu navigation (Start -> Difficulty/Customize -> Game).
 * **Version Engine:** Integrated a dropdown that toggles game features from v0.1 up to v0.6.7.
+* **Rush Hour Refined:** * Fixed typo detection logic (no more false "Game Over").
+    * Restored the Heat Meter (Time Limit) specifically for this mode.
+* **Cozy Mode:** Focuses on the "Chocolate Progression" bar with a Menu return button.
+* **Palette Engine:** Supports Classic, Midnight, and Matcha themes across all screens.
+* **Transition Logic:** The loading screen now acts as a bridge between all menu states.
+  
+### v0.7 - The "Definitive Brew" Update
+* **Unified State Machine:** Full menu navigation (Start -> Difficulty/Customize -> Game).
+* **Sensory & Audio Engine:** * Integrated real-time BGM and SFX (Click, Ding, Error).
+    * BGM triggers on first interaction for a seamless shift start.
+* **Physics-Based UI:** Implemented "Bouncy Buttons" using `cubic-bezier` scaling.
+    * Buttons size up on hover and compress on click.
+* **Version Engine:** Integrated a dropdown that toggles game features from v0.1 up to v0.7.
 * **Rush Hour Refined:** * Fixed typo detection logic (no more false "Game Over").
     * Restored the Heat Meter (Time Limit) specifically for this mode.
 * **Cozy Mode:** Focuses on the "Chocolate Progression" bar with a Menu return button.
