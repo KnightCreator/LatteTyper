@@ -2,232 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LatteTyper | v0.6.7 Multiverse</title>
+    <title>LatteTyper | v0.6.9 Audio Update</title>
     <style>
         :root {
             --bg: #fdf6f0; --espresso: #3d2622; --latte: #f5ebe0;
-            --accent: #d4a373; --text: #3d2622; --danger: #e63946; --success: #52b788;
+            --accent: #d4a373; --text: #3d2622; --danger: #e63946;
         }
-
-        /* PALETTE ENGINE */
-        .palette-midnight { --bg: #1a1a1a; --espresso: #000; --accent: #7d5fff; --text: #eee; }
-        .palette-matcha { --bg: #f0f4ef; --espresso: #1e352f; --accent: #a3b18a; --text: #1e352f; }
 
         body {
-            margin: 0; padding: 0; background-color: var(--bg); color: var(--text);
-            font-family: 'Courier New', Courier, monospace; height: 100vh;
+            margin: 0; background-color: var(--bg); color: var(--text);
+            font-family: 'Courier New', monospace; height: 100vh;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
-            transition: background 0.5s ease;
         }
 
-        /* INFINITE BG (v0.5+) */
-        #bg-layer {
-            position: fixed; inset: 0; z-index: -1;
-            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.03), rgba(0,0,0,0.03) 10px, transparent 10px, transparent 20px);
-            animation: moveBg 15s linear infinite; display: none;
+        /* --- BUTTON ANIMATIONS --- */
+        button, select { 
+            background: var(--espresso); color: white; border: none; 
+            padding: 12px 20px; margin: 8px; cursor: pointer; 
+            font-family: inherit; font-weight: bold; width: 80%;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.1s;
         }
-        @keyframes moveBg { from { background-position: 0 0; } to { background-position: 100px 0; } }
 
-        /* LOADER / TRANSITION */
-        #loader {
-            position: fixed; inset: 0; background: var(--espresso);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 500; color: white;
+        /* Size up on hover, don't change color */
+        button:hover {
+            transform: scale(1.1);
         }
-        .load-bar { width: 250px; height: 4px; background: #444; margin-top: 15px; }
-        #load-fill { width: 0%; height: 100%; background: var(--accent); }
 
-        /* SCREEN SYSTEM */
+        /* Only change color when clicked (active) */
+        button:active {
+            background: var(--accent);
+            transform: scale(0.95);
+        }
+
         .screen { 
-            display: none; width: 90%; max-width: 550px; text-align: center;
+            display: none; width: 90%; max-width: 500px; text-align: center;
             background: white; padding: 40px; border-radius: 20px;
             box-shadow: 15px 15px 0px var(--accent); border: 2px solid var(--espresso);
         }
         .active { display: block; }
 
-        /* GAME UI */
-        #order-box { font-size: 20px; padding: 20px; border-left: 5px solid var(--accent); background: #faf9f6; margin: 15px 0; color: #333; }
         #input-area { width: 100%; border: none; border-bottom: 2px solid var(--espresso); font-size: 22px; padding: 10px 0; outline: none; background: transparent; color: var(--text); }
         .progress-container { width: 100%; height: 15px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
         #game-bar { height: 100%; width: 0%; transition: width 0.1s; }
-        
-        button, select { 
-            background: var(--espresso); color: white; border: none; padding: 12px 20px; 
-            margin: 8px; cursor: pointer; font-family: inherit; font-weight: bold; width: 80%;
-        }
-        button:hover { background: var(--accent); }
-
-        #game-over { position: absolute; inset: 0; background: var(--espresso); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; z-index: 100; }
     </style>
 </head>
-<body class="palette-classic">
-
-    <div id="bg-layer"></div>
-
-    <div id="loader">
-        <h2 id="loader-text">LOADING...</h2>
-        <div class="load-bar"><div id="load-fill"></div></div>
-    </div>
+<body>
 
     <div id="screen-start" class="screen active">
         <h1>☕ LatteTyper</h1>
-        <button onclick="nav('game')">START</button>
-        <button onclick="nav('difficulty')">CHANGE DIFFICULTY</button>
-        <button onclick="nav('customize')">CUSTOMIZE & VERSIONS</button>
-    </div>
-
-    <div id="screen-difficulty" class="screen">
-        <h2>Select Shift Type</h2>
-        <button onclick="setDiff('cozy')">COZY (Choco Bar)</button>
-        <button onclick="setDiff('rush')">RUSH HOUR (Heat Meter)</button>
-        <button onclick="nav('start')">BACK</button>
+        <button onclick="playSFX('click'); nav('game')">START</button>
+        <button onclick="playSFX('click'); nav('customize')">CUSTOMIZE</button>
     </div>
 
     <div id="screen-customize" class="screen">
-        <h3>Version Multiverse</h3>
-        <select onchange="applyVersion(this.value)">
-            <option value="v0.6.7">v0.6.7 (Modern)</option>
-            <option value="v0.5">v0.5 (Engine Sync)</option>
-            <option value="v0.1">v0.1 (Legacy)</option>
-        </select>
-
-        <h3>Visual Palette</h3>
-        <button onclick="setPalette('classic')">CLASSIC</button>
-        <button onclick="setPalette('midnight')">MIDNIGHT</button>
-        <button onclick="setPalette('matcha')">MATCHA</button>
-        <button onclick="nav('start')">BACK</button>
+        <h2>Settings</h2>
+        <p>BGM Volume:</p>
+        <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="updateVolume(this.value)">
+        <button onclick="playSFX('click'); nav('start')">BACK</button>
     </div>
 
     <div id="screen-game" class="screen">
-        <div id="game-over">
-            <h1 id="over-title">SHIFT ENDED</h1>
-            <p id="final-stats"></p>
-            <button onclick="nav('start')">MAIN MENU</button>
-        </div>
-        <div class="stats" style="display:flex; justify-content: space-between; font-weight:bold; font-size:12px;">
-            <span id="mode-tag">MODE: COZY</span>
-            <span>WPM: <span id="wpm-val">0</span></span>
-        </div>
-        <div id="order-box">Wait for customer...</div>
+        <div class="stats">WPM: <span id="wpm-val">0</span></div>
+        <div id="order-box" style="padding: 20px; background: #f9f9f9; margin: 15px 0;">Wait...</div>
         <input type="text" id="input-area" placeholder="Type here..." autocomplete="off">
-        
-        <p id="bar-label" style="font-size: 10px; text-align: left; margin-top: 15px; font-weight:bold;">PROGRESS</p>
-        <div class="progress-container"><div id="game-bar"></div></div>
-        
-        <button id="btn-return" style="display:none; width:auto; font-size:10px; margin-top:10px;" onclick="nav('start')">RETURN TO MENU</button>
+        <div class="progress-container"><div id="game-bar" style="background:var(--accent);"></div></div>
     </div>
 
     <script>
-        let curVer = "v0.6.7", mode = 'cozy', gameActive = false;
-        let currentOrder = "", totalChars = 0, startTime, heat = 100;
-        const orders = ["Oat milk latte.", "Double espresso.", "Iced mocha.", "Hot cocoa.", "Flat white.", "Black coffee.", "Matcha latte."];
+        // --- AUDIO ENGINE ---
+        const sounds = {
+            click: new Audio('assets/click.mp3'),
+            ding: new Audio('assets/ding.mp3'),
+            error: new Audio('assets/error.mp3'),
+            bgm: new Audio('assets/lofi-beat.mp3')
+        };
 
-        // --- NAVIGATION ENGINE ---
+        sounds.bgm.loop = true;
+
+        function playSFX(name) {
+            sounds[name].currentTime = 0;
+            sounds[name].play().catch(e => console.log("Audio needs user interaction first"));
+        }
+
+        function updateVolume(val) {
+            sounds.bgm.volume = val;
+        }
+
+        // --- NAVIGATION ---
         function nav(target) {
-            const loader = document.getElementById('loader');
-            const fill = document.getElementById('load-fill');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + target).classList.add('active');
             
-            loader.style.display = 'flex';
-            fill.style.transition = 'width 0.8s ease-in';
-            fill.style.width = '100%';
-
-            setTimeout(() => {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('screen-' + target).classList.add('active');
-                
-                loader.style.display = 'none';
-                fill.style.transition = 'none';
-                fill.style.width = '0%';
-
-                if(target === 'game') startGame();
-                else gameActive = false;
-            }, 800);
-        }
-
-        // --- VERSION CONFIGS ---
-        function applyVersion(v) {
-            curVer = v;
-            document.getElementById('bg-layer').style.display = (v >= "v0.5") ? "block" : "none";
-            nav('start');
-        }
-
-        function setDiff(d) { mode = d; nav('start'); }
-        function setPalette(p) { document.body.className = 'palette-' + p; nav('start'); }
-
-        // --- GAME ENGINE ---
-        function startGame() {
-            gameActive = true; totalChars = 0; heat = 100;
-            startTime = new Date();
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('mode-tag').innerText = "MODE: " + mode.toUpperCase();
-            
-            if(mode === 'cozy') {
-                document.getElementById('bar-label').innerText = "CHOCOLATE PROGRESSION";
-                document.getElementById('game-bar').style.backgroundColor = "var(--espresso)";
-                document.getElementById('btn-return').style.display = "inline-block";
-            } else {
-                document.getElementById('bar-label').innerText = "CUSTOMER WAITING TIME (HEAT)";
-                document.getElementById('game-bar').style.backgroundColor = "var(--danger)";
-                document.getElementById('btn-return').style.display = "none";
-                startRushTimer();
+            if(target === 'game') {
+                sounds.bgm.play();
+                startGame();
             }
+        }
+
+        // --- GAME LOGIC ---
+        let currentOrder = "Triple espresso.", gameActive = false, totalChars = 0, startTime;
+
+        function startGame() {
+            gameActive = true; totalChars = 0; startTime = new Date();
             nextOrder();
         }
 
         function nextOrder() {
-            currentOrder = orders[Math.floor(Math.random() * orders.length)];
+            currentOrder = "Double shot latte.";
             document.getElementById('order-box').innerText = currentOrder;
             document.getElementById('input-area').value = "";
-            document.getElementById('input-area').focus();
         }
 
         document.getElementById('input-area').addEventListener('input', (e) => {
             if(!gameActive) return;
             const val = e.target.value;
 
-            // TYPO DETECTION (Fix for Rush Mode)
-            if(mode === 'rush' && val.length > 0) {
-                if(val !== currentOrder.substring(0, val.length)) {
-                    endGame("TYPO DETECTED!");
-                    return;
-                }
+            // SFX on correct typing
+            if(val === currentOrder.substring(0, val.length)) {
+                // playSFX('click'); // Optional: click sound for every key
+            } else {
+                playSFX('error');
             }
 
-            // PROGRESS BAR
-            if(mode === 'cozy') {
-                const prog = (val.length / currentOrder.length) * 100;
-                document.getElementById('game-bar').style.width = prog + "%";
-            }
-
-            // COMPLETION
             if(val === currentOrder) {
+                playSFX('ding');
                 totalChars += currentOrder.length;
-                if(mode === 'rush') heat = Math.min(100, heat + 25);
                 nextOrder();
             }
-
-            // WPM CALCULATION
-            const elapsed = (new Date() - startTime) / 60000;
-            if(elapsed > 0.01) {
-                document.getElementById('wpm-val').innerText = Math.round((totalChars / 5) / elapsed);
-            }
         });
-
-        function startRushTimer() {
-            const t = setInterval(() => {
-                if(!gameActive || mode !== 'rush') { clearInterval(t); return; }
-                heat -= 0.6;
-                document.getElementById('game-bar').style.width = heat + "%";
-                if(heat <= 0) endGame("TIME'S UP!");
-            }, 100);
-        }
-
-        function endGame(msg) {
-            gameActive = false;
-            document.getElementById('over-title').innerText = msg;
-            document.getElementById('final-stats').innerText = "Speed: " + document.getElementById('wpm-val').innerText + " WPM";
-            document.getElementById('game-over').style.display = 'flex';
-        }
     </script>
 </body>
 </html>
